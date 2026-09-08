@@ -8,7 +8,6 @@ type TaskCardProps = {
   completed?: boolean;
   category?: string | null;
   dueDate?: string | Date | null;
-  onToggle?: (id?: number | string) => void;
   onDelete?: (id?: number | string) => void;
   onEdit?: (
     id?: number | string,
@@ -41,7 +40,6 @@ function TaskCard({
   completed = false,
   category,
   dueDate,
-  onToggle,
   onDelete,
   onEdit,
 }: TaskCardProps) {
@@ -82,12 +80,6 @@ function TaskCard({
       });
     }
     setEditing(false);
-  }
-
-  function handleToggleClick() {
-    if (onToggle) {
-      onToggle(id);
-    }
   }
 
   function handleDeleteClick() {
@@ -151,22 +143,37 @@ function TaskCard({
 
   return (
     <div style={cardStyle}>
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-        <h3
-          style={{
-            margin: 0,
-            fontSize: 20,
-            fontWeight: "bold",
-            textDecoration: completed ? "line-through" : "none",
-          }}
-        >
-          {title}
-        </h3>
+      <h3
+        style={{
+          margin: "0 0 8px 0",
+          fontSize: 20,
+          fontWeight: "bold",
+          textDecoration: completed ? "line-through" : "none",
+        }}
+      >
+        {title}
+      </h3>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          <button onClick={handleToggleClick} style={{ padding: "6px 10px" }}>
-            {completed ? "Completed" : "Mark"}
-          </button>
+      {description ? <p style={{ margin: "0 0 8px 0", color: "#374151" }}>{description}</p> : null}
+
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          borderTop: "1px solid #e5e7eb",
+          marginTop: 8,
+          paddingTop: 8,
+        }}
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <small style={{ color: "#6b7280" }}>
+            {dueDate ? "Due: " + formatDate(dueDate) : "No due date"}
+          </small>
+          <small style={{ color: "#6b7280" }}>ID: {id !== undefined ? id : "—"}</small>
+        </div>
+
+        <div style={{ display: "flex", gap: 8 }}>
           <button onClick={handleEditClick} style={{ padding: "6px 10px" }}>
             Edit
           </button>
@@ -174,15 +181,6 @@ function TaskCard({
             Delete
           </button>
         </div>
-      </div>
-
-      {description ? <p style={{ margin: "0 0 8px 0", color: "#374151" }}>{description}</p> : null}
-
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <small style={{ color: "#6b7280" }}>
-          {dueDate ? "Due: " + formatDate(dueDate) : "No due date"}
-        </small>
-        <small style={{ color: "#6b7280" }}>ID: {id !== undefined ? id : "—"}</small>
       </div>
     </div>
   );

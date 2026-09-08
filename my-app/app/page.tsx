@@ -101,28 +101,6 @@ export default function HomePage() {
     }
   };
 
-  const toggleTask = async (id?: number | string) => {
-    const taskId = Number(id); // id can arrive as a string from TaskCard, force it back to a number
-    const task = tasks.find((t) => t.id === taskId);
-    if (!task) return;
-
-    try {
-      const res = await fetch(`/api/tasks/${taskId}`, {
-        method: "PATCH", // partially updates just the fields we send
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ completed: !task.completed }),
-      });
-      if (!res.ok) throw new Error("Failed to update task");
-      const updatedTask: Task = await res.json();
-
-      setTasks((current) =>
-        current.map((t) => (t.id === taskId ? updatedTask : t))
-      );
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update task");
-    }
-  };
-
   const editTask = async (
     id?: number | string,
     updates?: { title: string; description?: string; category?: string; dueDate?: string }
@@ -195,6 +173,41 @@ export default function HomePage() {
     if (!name || name === UNCATEGORIZED || columns.includes(name)) return;
     setColumns((current) => [...current, name]);
     setNewColumnName("");
+  };
+
+  const deleteColumn = async (columnName: string) => {
+    if (columnName === UNCATEGORIZED) return;
+
+    const affectedTasks = tasks.filter((t) => t.category === columnName);
+    const confirmed = window.confirm(
+      affectedTasks.length > 0
+        ? `Delete "${columnName}"? ${affectedTasks.length} task(s) will move to Uncategorized.`
+        : `Delete "${columnName}"?`
+    );
+    if (!confirmed) return;
+
+    try {
+      await Promise.all(
+        affectedTasks.map((task) =>
+          fetch(`/api/tasks/${task.id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ category: null }),
+          }).then((res) => {
+            if (!res.ok) throw new Error("Failed to update task");
+            return res.json();
+          })
+        )
+      ).then((updatedTasks: Task[]) => {
+        setTasks((current) =>
+          current.map((t) => updatedTasks.find((u) => u.id === t.id) ?? t)
+        );
+      });
+
+      setColumns((current) => current.filter((c) => c !== columnName));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to delete category");
+    }
   };
 
   const sortTasks = (list: Task[]) => {
@@ -375,7 +388,26 @@ export default function HomePage() {
                 }}
               >
                 <h3 style={{ margin: 0, fontSize: 14, color: "#374151" }}>{col.name}</h3>
-                <span style={{ fontSize: 12, color: "#9ca3af" }}>{col.tasks.length}</span>
+                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                  <span style={{ fontSize: 12, color: "#9ca3af" }}>{col.tasks.length}</span>
+                  {col.name !== UNCATEGORIZED ? (
+                    <button
+                      onClick={() => deleteColumn(col.name)}
+                      title={`Delete "${col.name}" category`}
+                      style={{
+                        border: "none",
+                        background: "transparent",
+                        color: "#9ca3af",
+                        cursor: "pointer",
+                        fontSize: 14,
+                        lineHeight: 1,
+                        padding: 0,
+                      }}
+                    >
+                      ×
+                    </button>
+                  ) : null}
+                </div>
               </div>
 
               {col.tasks.length === 0 ? (
@@ -398,7 +430,6 @@ export default function HomePage() {
                       completed={task.completed}
                       category={task.category}
                       dueDate={task.dueDate}
-                      onToggle={toggleTask}
                       onDelete={deleteTask}
                       onEdit={editTask}
                     />
