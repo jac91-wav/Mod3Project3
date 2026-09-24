@@ -61,7 +61,7 @@ export default function HomePage() {
     loadTasks();
   }, []);
 
-  //merge cats
+  //merge cols
   function mergeColumns(existing: string[], taskList: Task[]) {
     const fromTasks = Array.from( // Set + Array.from removes duplicate category names
       new Set(taskList.map((t) => t.category).filter((c): c is string => !!c))
@@ -238,6 +238,8 @@ export default function HomePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tasks, columns, sortKey]);
 
+
+  //style of doc
   return (
     <main style={{ maxWidth: 1200, margin: "0 auto", padding: 24 }}>
       <h1 style={{ textAlign: "justify", fontWeight: "bold" }}>PROJECT 3 TASKBOARD</h1>

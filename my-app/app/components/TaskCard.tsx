@@ -1,37 +1,33 @@
-import { useState } from "react";
+import { useState, type ChangeEvent } from "react";
 
-// This is the props (inputs) that TaskCard needs to work.
+type DateLike = string | Date | null | undefined;
+
+// What the parent page passes in. Only `title` is required.
 type TaskCardProps = {
   id?: number | string;
   title: string;
   description?: string | null;
-  completed?: boolean;
+  completed?: boolean; // true = green background and struck-through title
   category?: string | null;
   dueDate?: string | Date | null;
-  onDelete?: (id?: number | string) => void;
+  onDelete?: (id?: number | string) => void; // called with this task's id when Delete is clicked
   onEdit?: (
     id?: number | string,
     updates?: { title: string; description?: string; category?: string; dueDate?: string }
-  ) => void;
+  ) => void; // called with the id and the edited fields when Save is clicked
 };
 
-// turns a date into something like "1/2/2026" for showing on the page
-function formatDate(date?: string | Date | null) {
-  if (!date) {
-    return null;
-  }
-  const realDate = typeof date === "string" ? new Date(date) : date;
-  return realDate.toLocaleDateString();
-}
+// Accepts: an ISO string, a Date, or nothing
+// Returns: a display date like "1/2/2026", or null if there is no date
+const formatDate = (date: DateLike) => (date ? new Date(date).toLocaleDateString() : null);
 
-// turns a date into "yyyy-mm-dd" so it can go inside an <input type="date">
-function toInputDate(date?: string | Date | null) {
-  if (!date) {
-    return "";
-  }
-  const realDate = typeof date === "string" ? new Date(date) : date;
-  return realDate.toISOString().slice(0, 10);
-}
+// Accepts: an ISO string, a Date, or nothing
+// Returns: "yyyy-mm-dd", the format <input type="date"> needs ("" if there is no date)
+const toInputDate = (date: DateLike) => (date ? new Date(date).toISOString().slice(0, 10) : "");
+
+// Shared inline styles for the edit form and buttons
+const fieldStyle = { padding: 8, marginBottom: 8, width: "100%", fontSize: 14 };
+const buttonStyle = { padding: "6px 10px" };
 
 function TaskCard({
   id,
@@ -43,49 +39,43 @@ function TaskCard({
   onDelete,
   onEdit,
 }: TaskCardProps) {
-  // this is true while we are showing the edit form instead of the normal view
+  // true while the edit form is shown instead of the normal view
   const [editing, setEditing] = useState(false);
 
-  // these hold the values typed into the edit form
-  const [newTitle, setNewTitle] = useState(title);
-  const [newDescription, setNewDescription] = useState(description || "");
-  const [newCategory, setNewCategory] = useState(category || "");
-  const [newDueDate, setNewDueDate] = useState(toInputDate(dueDate));
+  // The task's current values as strings for the form inputs (null/undefined become "")
+  const currentValues = () => ({
+    title,
+    description: description || "",
+    category: category || "",
+    dueDate: toInputDate(dueDate),
+  });
 
+  // What the user has typed into the edit form so far
+  const [form, setForm] = useState(currentValues);
+
+  // Returns an onChange handler that updates one field of the form
+  const setField =
+    (field: keyof typeof form) => (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+      setForm((f) => ({ ...f, [field]: e.target.value }));
+
+  // Opens the form, reset to the task's current values (discards any earlier unsaved typing)
   function handleEditClick() {
-    // fill the edit form with the current task info before showing it
-    setNewTitle(title);
-    setNewDescription(description || "");
-    setNewCategory(category || "");
-    setNewDueDate(toInputDate(dueDate));
+    setForm(currentValues());
     setEditing(true);
   }
 
-  function handleCancelClick() {
-    setEditing(false);
-  }
-
+  // Sends the trimmed values to the parent; empty optional fields are sent as undefined
   function handleSaveClick() {
-    const trimmedTitle = newTitle.trim();
-    if (trimmedTitle === "") {
-      return; // don't save a task with no title
-    }
+    const trimmedTitle = form.title.trim();
+    if (!trimmedTitle) return; // don't save a task with no title
 
-    if (onEdit) {
-      onEdit(id, {
-        title: trimmedTitle,
-        description: newDescription.trim() === "" ? undefined : newDescription.trim(),
-        category: newCategory.trim() === "" ? undefined : newCategory.trim(),
-        dueDate: newDueDate === "" ? undefined : newDueDate,
-      });
-    }
+    onEdit?.(id, {
+      title: trimmedTitle,
+      description: form.description.trim() || undefined,
+      category: form.category.trim() || undefined,
+      dueDate: form.dueDate || undefined,
+    });
     setEditing(false);
-  }
-
-  function handleDeleteClick() {
-    if (onDelete) {
-      onDelete(id);
-    }
   }
 
   // green background when the task is done, white otherwise
@@ -97,44 +87,43 @@ function TaskCard({
     background: completed ? "#f0fdf4" : "#fff",
   };
 
-  // show the edit form instead of the normal card while editing
   if (editing) {
     return (
       <div style={cardStyle}>
         <input
           type="text"
-          value={newTitle}
-          onChange={(e) => setNewTitle(e.target.value)}
+          value={form.title}
+          onChange={setField("title")}
           placeholder="Task title"
-          style={{ padding: 8, marginBottom: 8, width: "100%", fontSize: 15 }}
+          style={{ ...fieldStyle, fontSize: 15 }}
         />
         <textarea
-          value={newDescription}
-          onChange={(e) => setNewDescription(e.target.value)}
+          value={form.description}
+          onChange={setField("description")}
           placeholder="Task description"
           rows={2}
-          style={{ padding: 8, marginBottom: 8, width: "100%", fontSize: 14 }}
+          style={fieldStyle}
         />
         <input
           type="text"
-          value={newCategory}
-          onChange={(e) => setNewCategory(e.target.value)}
+          value={form.category}
+          onChange={setField("category")}
           placeholder="Category"
-          style={{ padding: 8, marginBottom: 8, width: "100%", fontSize: 14 }}
+          style={fieldStyle}
         />
         <label style={{ display: "block", marginBottom: 8, fontSize: 13, color: "#374151" }}>
           Due date
           <input
             type="date"
-            value={newDueDate}
-            onChange={(e) => setNewDueDate(e.target.value)}
-            style={{ padding: 8, marginTop: 4, width: "100%", fontSize: 14 }}
+            value={form.dueDate}
+            onChange={setField("dueDate")}
+            style={{ ...fieldStyle, marginTop: 4, marginBottom: 0 }}
           />
         </label>
-        <button onClick={handleSaveClick} style={{ marginRight: 8, padding: "6px 10px" }}>
+        <button onClick={handleSaveClick} style={{ ...buttonStyle, marginRight: 8 }}>
           Save
         </button>
-        <button onClick={handleCancelClick} style={{ padding: "6px 10px" }}>
+        <button onClick={() => setEditing(false)} style={buttonStyle}>
           Cancel
         </button>
       </div>
@@ -168,16 +157,16 @@ function TaskCard({
       >
         <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
           <small style={{ color: "#6b7280" }}>
-            {dueDate ? "Due: " + formatDate(dueDate) : "No due date"}
+            {dueDate ? `Due: ${formatDate(dueDate)}` : "No due date"}
           </small>
-          <small style={{ color: "#6b7280" }}>ID: {id !== undefined ? id : "—"}</small>
+          <small style={{ color: "#6b7280" }}>ID: {id ?? "—"}</small>
         </div>
 
         <div style={{ display: "flex", gap: 8 }}>
-          <button onClick={handleEditClick} style={{ padding: "6px 10px" }}>
+          <button onClick={handleEditClick} style={buttonStyle}>
             Edit
           </button>
-          <button onClick={handleDeleteClick} style={{ padding: "6px 10px", color: "#ef4444" }}>
+          <button onClick={() => onDelete?.(id)} style={{ ...buttonStyle, color: "#ef4444" }}>
             Delete
           </button>
         </div>

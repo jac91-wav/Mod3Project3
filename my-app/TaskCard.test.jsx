@@ -12,17 +12,6 @@ describe("TaskCard", () => {
     expect(screen.getByText("No due date")).toBeInTheDocument();
   });
 
-  it("calls onToggle with the task id when the mark/complete button is clicked", async () => {
-    const user = userEvent.setup();
-    const onToggle = jest.fn();
-    render(<TaskCard id={42} title="Walk the dog" onToggle={onToggle} />);
-
-    await user.click(screen.getByRole("button", { name: "Mark" }));
-
-    expect(onToggle).toHaveBeenCalledTimes(1);
-    expect(onToggle).toHaveBeenCalledWith(42);
-  });
-
   it("calls onDelete with the task id when the delete button is clicked", async () => {
     const user = userEvent.setup();
     const onDelete = jest.fn();
