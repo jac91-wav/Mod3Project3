@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -27,7 +24,10 @@ model Task {
   completed   Boolean   @default(false)
   category    String?
   dueDate     DateTime?
+  // ponytail: tags stored as a JSON array of strings; move to a Tag table if you need to filter/rename tags in the database
+  tags        Json?
   userId      Int?
+  // userId stores User.id; deleting that user sets userId to null instead of deleting the task
   user        User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())

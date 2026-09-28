@@ -3,8 +3,6 @@
     "paths": {
       "@/*": ["./*"]
     },
-    "sourceMap": true,
-    "outDir": "dist",
     "strict": true,
     "lib": [
       "esnext",

@@ -1,58 +1,56 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
-import { z } from "zod"; // validates the request body
+import { z } from "zod";
 
-// Second argument Next.js passes to every handler in this folder.
-// `params` holds the [id] part of the URL (e.g. /api/tasks/5 -> { id: "5" }) and is a Promise in this Next.js version.
+// params holds the [id] part of the URL (/api/tasks/5 -> { id: "5" }), and is a Promise in this Next.js version
 type RouteContext = { params: Promise<{ id: string }> };
 
-// Shape a PATCH body must match. Every field is optional so a client can send only what changed.
-// `.nullable()` lets category, dueDate and userId be cleared by sending null.
+// optional() = the field may be left out, nullable() = the field may be null (which clears it)
 const updateTaskSchema = z.object({
   title: z.string().min(1).max(255).optional(),
   description: z.string().min(1).optional(),
   completed: z.boolean().optional(),
   category: z.string().max(100).nullable().optional(),
-  dueDate: z.string().datetime().nullable().optional(), // ISO 8601 string, converted to a Date before saving
-  userId: z.number().nullable().optional(),
+  dueDate: z.string().datetime().nullable().optional(),
+  tags: z.array(z.string().trim().min(1).max(30)).max(10).optional(),
 });
 
-// Accepts: the route context (see RouteContext above)
-// Returns: the task id as an integer, or null if the URL segment isn't a whole number
-async function getTaskId( {params}: RouteContext ) {
+async function getTaskId({ params }: RouteContext) {
   const { id } = await params;
   const parsed = Number(id);
-  return Number.isInteger(parsed) ? parsed : null;
+  if (!Number.isInteger(parsed)) return null;
+  return parsed;
 }
 
-// Shared 400 response for a bad id
-const invalidIdResponse = () =>
-  NextResponse.json({ error: "Invalid task id" }, { status: 400 });
+function invalidIdResponse() {
+  return NextResponse.json({ error: "Invalid task id" }, { status: 400 });
+}
 
-// PATCH /api/tasks/:id
-// Accepts: a JSON body with any fields from updateTaskSchema
-// Returns: the updated task (with its user), 400 for a bad id or body, 500 if the update fails
 export async function PATCH(request: NextRequest, context: RouteContext) {
   const taskId = await getTaskId(context);
   if (taskId === null) return invalidIdResponse();
 
   try {
-    const validation = updateTaskSchema.safeParse(await request.json());
+    const body = await request.json();
+
+    // safeParse returns { success, data } or { success, error } instead of throwing
+    const validation = updateTaskSchema.safeParse(body);
     if (!validation.success) {
       return NextResponse.json(validation.error.errors, { status: 400 });
     }
 
-    // dueDate is split out because the database needs a Date, not the ISO string
     const { dueDate, ...rest } = validation.data;
+
+    // Prisma skips fields set to undefined, so: undefined = leave as is, null = clear it,
+    // string = convert to the Date object the database needs
+    const dueDateUpdate = dueDate ? new Date(dueDate) : dueDate;
 
     const updatedTask = await prisma.task.update({
       where: { id: taskId },
       data: {
         ...rest,
-        // only touch dueDate if the client sent it; null clears it
-        ...(dueDate !== undefined && { dueDate: dueDate && new Date(dueDate) }),
+        dueDate: dueDateUpdate,
       },
-      include: { user: true },
     });
 
     return NextResponse.json(updatedTask);
@@ -62,9 +60,6 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   }
 }
 
-// DELETE /api/tasks/:id
-// Accepts: nothing in the body, the id comes from the URL
-// Returns: { success: true }, 400 for a bad id, 500 if the delete fails
 export async function DELETE(request: NextRequest, context: RouteContext) {
   const taskId = await getTaskId(context);
   if (taskId === null) return invalidIdResponse();

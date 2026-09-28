@@ -1,22 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
-import { z } from "zod"; // validates the request body
+import { z } from "zod";
 
-// Shape a POST body must match. title and description are required; the rest are optional.
 const createTaskSchema = z.object({
   title: z.string().min(1).max(255),
   description: z.string().min(1),
   category: z.string().max(100).optional(),
-  dueDate: z.string().datetime().optional(), // ISO 8601 string, converted to a Date before saving
-  userId: z.number().optional(),
+  dueDate: z.string().datetime().optional(),
+  tags: z.array(z.string().trim().min(1).max(30)).max(10).optional(),
 });
 
-// GET /api/tasks
-// Accepts: nothing
-// Returns: every task (each with its user), or 500 if the database call fails
 export async function GET() {
   try {
-    const tasks = await prisma.task.findMany({ include: { user: true } });
+    const tasks = await prisma.task.findMany();
     return NextResponse.json(tasks);
   } catch (error) {
     console.error("Failed to fetch tasks:", error);
@@ -24,29 +20,28 @@ export async function GET() {
   }
 }
 
-// POST /api/tasks
-// Accepts: a JSON body matching createTaskSchema
-// Returns: the new task (201), 400 if the body is invalid, or 500 if saving fails
 export async function POST(request: NextRequest) {
   try {
-    const validation = createTaskSchema.safeParse(await request.json());
-    
+    const body = await request.json();
+
+    // safeParse returns { success, data } or { success, error } instead of throwing
+    const validation = createTaskSchema.safeParse(body);
     if (!validation.success) {
       return NextResponse.json(validation.error.errors, { status: 400 });
     }
 
-    const { title, description, category, dueDate, userId } = validation.data;
+    const { title, description, category, dueDate, tags } = validation.data;
 
     const newTask = await prisma.task.create({
       data: {
         title,
         description,
-        // optional fields become null (empty in the database) when missing or empty
+        // || null stores missing or empty values as NULL in the database
         category: category || null,
-        dueDate: dueDate ? new Date(dueDate) : null, // the database needs a Date, not the ISO string
-        userId: userId || null,
+        // the database needs a Date object, not the ISO string
+        dueDate: dueDate ? new Date(dueDate) : null,
+        tags: tags ?? [],
       },
-      include: { user: true },
     });
 
     return NextResponse.json(newTask, { status: 201 });

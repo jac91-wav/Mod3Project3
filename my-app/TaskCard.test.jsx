@@ -54,7 +54,24 @@ describe("TaskCard", () => {
       description: undefined,
       category: undefined,
       dueDate: undefined,
+      tags: [],
     });
     expect(screen.getByText("Old title")).toBeInTheDocument();
+  });
+
+  it("shows tags and saves edited tags as a cleaned-up list", async () => {
+    const user = userEvent.setup();
+    const onEdit = jest.fn();
+    render(<TaskCard id={2} title="Study" tags={["school"]} onEdit={onEdit} />);
+
+    expect(screen.getByText("#school")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Edit" }));
+    const tagsInput = screen.getByPlaceholderText("Tags, separated by commas");
+    await user.clear(tagsInput);
+    await user.type(tagsInput, " exam, urgent,, exam ");
+    await user.click(screen.getByRole("button", { name: "Save" }));
+
+    expect(onEdit).toHaveBeenCalledWith(2, expect.objectContaining({ tags: ["exam", "urgent"] }));
   });
 });

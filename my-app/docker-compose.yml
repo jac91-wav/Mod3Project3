@@ -1,14 +1,14 @@
-version: '3.8'
-
 services:
   mysql:
-    image: mysql:latest
+    # same version, port and database name as DATABASE_URL in .env
+    image: mysql:8.0
     container_name: mysql-container
     environment:
-      - MYSQL_ROOT_PASSWORD=my-secret-pw
-      - MYSQL_DATABASE=my_database
+      # read from .env, so the password is never committed
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:?add MYSQL_ROOT_PASSWORD to .env}
+      - MYSQL_DATABASE=taskboard-db
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
       - mysql-data:/var/lib/mysql
     restart: always

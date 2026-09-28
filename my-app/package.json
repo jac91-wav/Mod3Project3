@@ -15,8 +15,6 @@
     "prisma:studio": "prisma studio"
   },
   "dependencies": {
-    "@radix-ui/themes": "^3.3.0",
-    "dotenv": "^17.4.2",
     "next": "16.3.4",
     "react": "19.2.8",
     "react-dom": "19.2.8",
@@ -37,15 +35,8 @@
     "eslint-config-next": "16.3.4",
     "jest": "^30.5.1",
     "jest-environment-jsdom": "^30.5.1",
-    "nodemon": "^3.1.14",
     "prisma": "^5.21.0",
     "tailwindcss": "^4",
-    "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
-  },
-  "description": "This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).",
-  "main": "index.js",
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
+  }
 }
