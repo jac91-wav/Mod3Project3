@@ -24,10 +24,10 @@ model Task {
   completed   Boolean   @default(false)
   category    String?
   dueDate     DateTime?
-  // ponytail: tags stored as a JSON array of strings; move to a Tag table if you need to filter/rename tags in the database
+  // ponytail: JSON string array; move to a Tag table to filter/rename in SQL
   tags        Json?
   userId      Int?
-  // userId stores User.id; deleting that user sets userId to null instead of deleting the task
+  // deleting the user nulls userId
   user        User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())

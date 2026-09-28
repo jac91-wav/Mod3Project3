@@ -19,7 +19,7 @@ export type NewTaskFields = {
   tags?: string[];
 };
 
-// "work, urgent,, Work " -> ["work", "urgent", "Work"]: split on commas, trim, drop empties and exact duplicates
+// "a, b,, a " -> ["a", "b"]
 export function parseTags(text: string) {
   const tags = text.split(",").map((tag) => tag.trim()).filter((tag) => tag !== "");
   return Array.from(new Set(tags));
@@ -29,14 +29,12 @@ export type SortKey = "dueDate" | "createdOrder" | "title";
 
 export const UNCATEGORIZED = "Uncategorized";
 
-// "2026-10-01" is read as local midnight, then toISOString() converts it to UTC,
-// so east of UTC the stored timestamp falls on the previous day (e.g. "2026-09-30T22:00:00.000Z")
+// local midnight as UTC ISO (previous day east of UTC)
 function toIsoDateTime(dateOnly: string) {
   const localMidnight = new Date(`${dateOnly}T00:00:00`);
   return localMidnight.toISOString();
 }
 
-//
 const CATEGORY_COLORS = [
   "#8b5cf6",
   "#ec4899",
@@ -51,22 +49,19 @@ const CATEGORY_COLORS = [
 function hashString(str: string) {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
-    // multiplying by a prime (31) before adding spreads similar strings far apart
     hash = hash * 31 + str.charCodeAt(i);
-    // "| 0" truncates to a 32-bit integer so the number can't grow forever (it may go negative, hence Math.abs)
     hash = hash | 0;
   }
   return Math.abs(hash);
 }
 
 export function colorForCategory(name: string) {
-  // wraps nums 0-7
   const index = hashString(name) % CATEGORY_COLORS.length;
   return CATEGORY_COLORS[index];
 }
 
-// Category names, remembered in this browser so a category with no tasks yet survives a reload.
-// ponytail: per-browser, like the category colours; move to a Category table to share them between devices
+// saved so empty categories survive reloads
+// ponytail: per-browser; move to a Category table to share across devices
 const useSavedColumns = createStoredValue("taskboard-categories", "[]");
 
 function parseColumns(json: string): string[] {
@@ -74,7 +69,7 @@ function parseColumns(json: string): string[] {
     const parsed = JSON.parse(json);
     return Array.isArray(parsed) ? parsed : [];
   } catch {
-    return []; // saved text was damaged: categories that have tasks still come back from the tasks
+    return []; // corrupt: rebuilt from tasks
   }
 }
 
@@ -87,14 +82,12 @@ function mergeColumns(existing: string[], taskList: Task[]) {
 }
 
 function sortTasks(list: Task[], sortKey: SortKey) {
-  // .sort() changes the array it's called on, so sort a copy ([...list])
   if (sortKey === "title") {
-    // numeric: true compares numbers inside text by value, so "Task 2" comes before "Task 10"
     return [...list].sort((a, b) => a.title.localeCompare(b.title, undefined, { numeric: true }));
   }
 
   if (sortKey === "dueDate") {
-    // the comparator returns: negative = a first, positive = b first, 0 = keep order
+    // no due date last
     return [...list].sort((a, b) => {
       if (!a.dueDate && !b.dueDate) return 0;
       if (!a.dueDate) return 1;
@@ -106,12 +99,12 @@ function sortTasks(list: Task[], sortKey: SortKey) {
     });
   }
 
-  // "createdOrder": ids auto-increment, so a higher id is a newer task (b - a = highest first)
+  // createdOrder: newest (highest id) first
   return [...list].sort((a, b) => b.id - a.id);
 }
 
 export function useTaskBoard() {
-  const [tasks, setTasks] = useState<Task[]>([]); //<> = type
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -119,14 +112,13 @@ export function useTaskBoard() {
   const [columnsJson, saveColumnsJson] = useSavedColumns();
   const columns = useMemo(() => parseColumns(columnsJson), [columnsJson]);
 
-  // used like useState's setColumns((current) => next), but the list is also saved in this browser
   const setColumns = useCallback(
     (update: (current: string[]) => string[]) =>
       saveColumnsJson((json) => JSON.stringify(update(parseColumns(json)))),
     [saveColumnsJson]
   );
 
-  // setColumns never changes, so this runs once, when the component first mounts
+  // runs once on mount (setColumns is stable)
   useEffect(() => {
     const loadTasks = async () => {
       try {
@@ -145,7 +137,7 @@ export function useTaskBoard() {
     loadTasks();
   }, [setColumns]);
 
-  // returns true if the task was saved, so the form knows whether to close
+  // true if saved
   const addTask = async (fields: NewTaskFields) => {
     const title = fields.title.trim();
     const description = fields.description.trim();
@@ -177,7 +169,6 @@ export function useTaskBoard() {
     }
   };
 
-  // this function will 
   const editTask = async (
     id?: number | string,
     updates?: { title: string; description?: string; category?: string; dueDate?: string; tags?: string[] }
@@ -191,7 +182,7 @@ export function useTaskBoard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...updates,
-          // JSON.stringify drops undefined fields, so send null to actually clear these
+          // null clears; undefined would be dropped
           category: updates.category ?? null,
           dueDate: updates.dueDate ? toIsoDateTime(updates.dueDate) : null,
         }),
@@ -211,12 +202,12 @@ export function useTaskBoard() {
   };
 
   const moveTaskToColumn = async (taskId: number, targetColumn: string) => {
-    const task = tasks.find((t) => t.id === taskId); // find task via ID
+    const task = tasks.find((t) => t.id === taskId);
     if (!task) return;
 
-    const nextCategory = targetColumn === UNCATEGORIZED ? null : targetColumn; //if target !
+    const nextCategory = targetColumn === UNCATEGORIZED ? null : targetColumn;
 
-    // ?? null turns undefined into null so "no category" compares equal either way
+    // treat undefined as null
     const currentCategory = task.category ?? null;
     if (currentCategory === nextCategory) return;
 
@@ -250,7 +241,7 @@ export function useTaskBoard() {
     }
   };
 
-  // returns true if the column was added, so the form knows whether to close
+  // true if added
   const addColumn = (rawName: string) => {
     const name = rawName.trim();
     if (!name) return false;
@@ -277,8 +268,7 @@ export function useTaskBoard() {
     if (!window.confirm(message)) return;
 
     try {
-      // allSettled waits for every request, even if some fail, so the ones that
-      // succeeded can still update local state (Promise.all would stop at the first failure)
+      // allSettled so successes still apply if some fail
       const results = await Promise.allSettled(
         affectedTasks.map(async (task) => {
           const res = await fetch(`/api/tasks/${task.id}`, {
@@ -314,9 +304,8 @@ export function useTaskBoard() {
     }
   };
 
-  // useMemo caches the result and only recomputes when tasks, columns or sortKey change
   const board = useMemo(() => {
-    // Uncategorized only appears while some task has no category, so those tasks never become invisible
+    // show Uncategorized only when needed
     const hasUncategorizedTasks = tasks.some((t) => !t.category);
     const allColumns = hasUncategorizedTasks ? [...columns, UNCATEGORIZED] : columns;
 

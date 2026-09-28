@@ -1,10 +1,10 @@
 services:
   mysql:
-    # same version, port and database name as DATABASE_URL in .env
+    # matches DATABASE_URL in .env
     image: mysql:8.0
     container_name: mysql-container
     environment:
-      # read from .env, so the password is never committed
+      # from .env, not committed
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:?add MYSQL_ROOT_PASSWORD to .env}
       - MYSQL_DATABASE=taskboard-db
     ports:

@@ -9,12 +9,12 @@ type BackgroundPickerProps = {
 function BackgroundPicker({ value, onChange }: BackgroundPickerProps) {
   const [uploadError, setUploadError] = useState<string | null>(null);
 
-  // <input type="color"> only understands "#rrggbb", so show the default colour while a picture is the background
+  // color input needs "#rrggbb"; pictures fall back to the default
   const currentColor = backgroundColor(value);
 
   async function handleUpload(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-    e.target.value = ""; // reset, so choosing the same file again still triggers onChange
+    e.target.value = ""; // lets the same file be picked again
     if (!file) return;
 
     try {
@@ -38,13 +38,13 @@ function BackgroundPicker({ value, onChange }: BackgroundPickerProps) {
         />
       </label>
 
-      {/* the file input is visually hidden; clicking the label (styled as a button) opens it */}
+      {/* hidden input, opened via the label */}
       <label className="btn btn-secondary">
         Upload picture
         <input type="file" accept="image/*" onChange={handleUpload} className="sr-only" />
       </label>
 
-      {/* REMOVE PICTURE BUTTON (only while a picture is the background) */}
+      {/* REMOVE PICTURE BUTTON */}
       {!value.startsWith("#") && (
         <button type="button" onClick={() => onChange(DEFAULT_BACKGROUND)} className="btn btn-secondary">
           Remove picture

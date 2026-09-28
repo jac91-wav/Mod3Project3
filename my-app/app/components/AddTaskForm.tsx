@@ -13,8 +13,7 @@ function AddTaskForm({ onSave, onClose }: AddTaskFormProps) {
   const [tags, setTags] = useState("");
   const [saving, setSaving] = useState(false);
 
-  // the api requires both, so Add stays disabled until they're filled in
-  // (and while saving, so a double-click can't create the task twice)
+  // both required by the API; disabled while saving to block double submits
   const canSave = title.trim() !== "" && description.trim() !== "" && !saving;
 
   async function handleSave() {

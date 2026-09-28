@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    // safeParse returns { success, data } or { success, error } instead of throwing
+    // safeParse returns a result instead of throwing
     const validation = createTaskSchema.safeParse(body);
     if (!validation.success) {
       return NextResponse.json(validation.error.errors, { status: 400 });
@@ -36,9 +36,9 @@ export async function POST(request: NextRequest) {
       data: {
         title,
         description,
-        // || null stores missing or empty values as NULL in the database
+        // empty -> NULL
         category: category || null,
-        // the database needs a Date object, not the ISO string
+        // ISO string -> Date
         dueDate: dueDate ? new Date(dueDate) : null,
         tags: tags ?? [],
       },

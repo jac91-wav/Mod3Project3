@@ -51,10 +51,10 @@ function TaskCard({
     tags: (tags ?? []).join(", "),
   });
 
-  // passing the function itself (not currentValues()) means React only calls it on the first render
+  // lazy init: runs on first render only
   const [form, setForm] = useState(currentValues);
 
-  // setField("title") returns an onChange handler that updates only form.title
+  // setField("title") -> onChange for form.title
   function setField(field: keyof typeof form) {
     return (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       setForm((current) => ({ ...current, [field]: e.target.value }));
@@ -82,8 +82,7 @@ function TaskCard({
 
   const cardClass = "rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md";
 
-  // setHours(0, 0, 0, 0) moves "now" back to midnight today and returns it as a timestamp (ms),
-  // so a task due today doesn't count as overdue until tomorrow
+  // midnight today, so tasks due today aren't overdue
   const startOfToday = new Date().setHours(0, 0, 0, 0);
   const overdue = dueDate ? new Date(dueDate).getTime() < startOfToday : false;
 
@@ -148,7 +147,7 @@ function TaskCard({
 
       {description ? <p className="mt-1 text-sm leading-relaxed text-slate-600">{description}</p> : null}
 
-      {/* TAGS (?) */}
+      {/* TAGS */}
       {tags && tags.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-1">
           {tags.map((tag) => (

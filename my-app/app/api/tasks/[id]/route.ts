@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
 import { z } from "zod";
 
-// params holds the [id] part of the URL (/api/tasks/5 -> { id: "5" }), and is a Promise in this Next.js version
+// /api/tasks/5 -> params resolves to { id: "5" }
 type RouteContext = { params: Promise<{ id: string }> };
 
-// optional() = the field may be left out, nullable() = the field may be null (which clears it)
+// optional = may be omitted, nullable = null clears it
 const updateTaskSchema = z.object({
   title: z.string().min(1).max(255).optional(),
   description: z.string().min(1).optional(),
@@ -33,7 +33,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   try {
     const body = await request.json();
 
-    // safeParse returns { success, data } or { success, error } instead of throwing
+    // safeParse returns a result instead of throwing
     const validation = updateTaskSchema.safeParse(body);
     if (!validation.success) {
       return NextResponse.json(validation.error.errors, { status: 400 });
@@ -41,8 +41,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
     const { dueDate, ...rest } = validation.data;
 
-    // Prisma skips fields set to undefined, so: undefined = leave as is, null = clear it,
-    // string = convert to the Date object the database needs
+    // undefined = unchanged, null = clear, string = Date
     const dueDateUpdate = dueDate ? new Date(dueDate) : dueDate;
 
     const updatedTask = await prisma.task.update({

@@ -13,7 +13,7 @@ body {
   background: #f8fafc;
 }
 
-/* @apply copies the listed Tailwind classes into one reusable class, e.g. class="field" */
+/* reusable Tailwind classes */
 @layer components {
   .field {
     @apply w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-violet-400 focus:ring-4 focus:ring-violet-100;
@@ -29,8 +29,7 @@ body {
 
   .btn-secondary {
     @apply border border-violet-200 bg-white shadow-sm hover:bg-violet-50;
-    /* text in the page background colour (--page-color, set in page.tsx). min(l, 0.5) darkens light colours
-       so the text stays readable on the white button; dark colours are used as they are */
+    /* page colour, darkened if light so it reads on white */
     color: oklch(from var(--page-color, #8b5cf6) min(l, 0.5) c h);
   }
 }

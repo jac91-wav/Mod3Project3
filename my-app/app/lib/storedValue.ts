@@ -1,11 +1,8 @@
 import { useSyncExternalStore } from "react";
 
-// Creates a hook for one text value saved in this browser's localStorage, e.g.
-//   const useTheme = createStoredValue("theme", "light");
-//   const [theme, setTheme] = useTheme();
-// Every component using the hook sees the same value and re-renders when it changes.
+// shared localStorage-backed string hook: const [v, setV] = createStoredValue(key, fallback)()
 export function createStoredValue(storageKey: string, defaultValue: string) {
-  // in-memory copy, so updates still work if the browser blocks localStorage
+  // in-memory copy in case localStorage is blocked
   let current: string | null = null;
   const listeners = new Set<() => void>();
 
@@ -19,26 +16,25 @@ export function createStoredValue(storageKey: string, defaultValue: string) {
     try {
       current = localStorage.getItem(storageKey);
     } catch {
-      // storage blocked (private window, site data disabled): fall back to the default
+      // storage blocked: use default
     }
     return current ?? defaultValue;
   }
 
-  // takes the new value, or a function that turns the current value into the new one (like React's setState)
+  // value or updater fn, like setState
   function write(value: string | ((current: string) => string)) {
     const next = typeof value === "function" ? value(read()) : value;
     current = next;
     try {
       localStorage.setItem(storageKey, next);
     } catch {
-      // storage blocked or full: the value still applies until the page is reloaded
+      // storage blocked/full: keep in memory only
     }
-    // localStorage doesn't notify the tab that wrote to it, so tell every component using the hook to re-read
+    // storage events skip the writing tab, so notify manually
     listeners.forEach((listener) => listener());
   }
 
-  // useSyncExternalStore reads data that lives outside React. The third argument is the value used during
-  // server rendering, where localStorage doesn't exist; the browser then switches to the saved value.
+  // third arg = server snapshot (no localStorage on the server)
   return function useStoredValue() {
     const value = useSyncExternalStore(subscribe, read, () => defaultValue);
     return [value, write] as const;

@@ -16,14 +16,14 @@ export default function HomePage() {
   } = useTaskBoard();
   const [background, setBackground] = useBackground();
 
-  // --page-color is read by .btn-secondary in globals.css, so button text follows the background colour
+  // --page-color tints .btn-secondary text
   const pageStyle = { background, "--page-color": backgroundColor(background) } as CSSProperties;
 
   // PAGE BACKGROUND
   return (
     <div className="min-h-screen font-sans text-slate-900" style={pageStyle}>
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
-        {/* TOP PANEL: title and controls. Frosted white, so it stays readable on any background colour */}
+        {/* TOP PANEL */}
         <div className="mb-6 rounded-2xl bg-white/80 p-5 shadow-lg backdrop-blur">
           <header className="mb-4">
             <h1 className="text-3xl font-bold tracking-tight">
@@ -31,7 +31,7 @@ export default function HomePage() {
             </h1>
           </header>
 
-          {/* CONTROLS: sort dropdown on the left, background picker on the right */}
+          {/* CONTROLS */}
           <div className="flex flex-wrap items-center justify-between gap-3">
             <label className="flex items-center gap-2 text-sm text-slate-600">
               Sort Tasks by
@@ -50,7 +50,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* ERROR BANNER (visible during failure) */}
+        {/* ERROR BANNER */}
         {error && (
           <div
             role="alert"

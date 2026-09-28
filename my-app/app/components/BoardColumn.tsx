@@ -31,7 +31,7 @@ function BoardColumn({ name, tasks, onAddTask, onDropTask, onDeleteColumn, onEdi
     : "bg-white/85 shadow-lg backdrop-blur";
 
   function handleDragOver(e: DragEvent<HTMLDivElement>) {
-    // browsers block dropping by default; preventDefault allows it
+    // allow dropping
     e.preventDefault();
     setIsDragTarget(true);
   }
@@ -40,12 +40,12 @@ function BoardColumn({ name, tasks, onAddTask, onDropTask, onDeleteColumn, onEdi
     e.preventDefault();
     setIsDragTarget(false);
 
-    // 0 or NaN
+    // skip 0 / NaN
     const taskId = Number(e.dataTransfer.getData("text/plain"));
     if (taskId) onDropTask(taskId, name);
   }
 
-  // new tasks go into this column's category (none for Uncategorized)
+  // new tasks inherit this column's category
   function handleAddTask(fields: NewTaskFields) {
     return onAddTask({ ...fields, category: isUncategorized ? undefined : name });
   }
@@ -114,7 +114,7 @@ function BoardColumn({ name, tasks, onAddTask, onDropTask, onDeleteColumn, onEdi
         </p>
       ) : (
         <div className="flex flex-col gap-3">
-          {/* TASK BOX: */}
+          {/* TASK BOX */}
           {tasks.map((task) => (
             <div
               key={task.id}
