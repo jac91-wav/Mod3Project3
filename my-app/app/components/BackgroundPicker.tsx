@@ -20,9 +20,12 @@ function BackgroundPicker({ value, onChange }: BackgroundPickerProps) {
     try {
       onChange(await imageFileToBackground(file));
       setUploadError(null);
-    } catch {
+    }
+
+    catch {
       setUploadError("Couldn't read that picture. Try a JPG or PNG.");
     }
+
   }
 
   // BACKGROUND CONTROLS

@@ -13,11 +13,15 @@ export function createStoredValue(storageKey: string, defaultValue: string) {
 
   function read() {
     if (current !== null) return current;
+
     try {
       current = localStorage.getItem(storageKey);
-    } catch {
+    }
+
+    catch {
       // storage blocked: use default
     }
+
     return current ?? defaultValue;
   }
 
@@ -25,11 +29,15 @@ export function createStoredValue(storageKey: string, defaultValue: string) {
   function write(value: string | ((current: string) => string)) {
     const next = typeof value === "function" ? value(read()) : value;
     current = next;
+
     try {
       localStorage.setItem(storageKey, next);
-    } catch {
+    }
+
+    catch {
       // storage blocked/full: keep in memory only
     }
+
     // storage events skip the writing tab, so notify manually
     listeners.forEach((listener) => listener());
   }

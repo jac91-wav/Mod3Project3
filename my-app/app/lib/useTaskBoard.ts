@@ -65,12 +65,16 @@ export function colorForCategory(name: string) {
 const useSavedColumns = createStoredValue("taskboard-categories", "[]");
 
 function parseColumns(json: string): string[] {
+
   try {
     const parsed = JSON.parse(json);
     return Array.isArray(parsed) ? parsed : [];
-  } catch {
+  }
+
+  catch {
     return []; // corrupt: rebuilt from tasks
   }
+
 }
 
 function mergeColumns(existing: string[], taskList: Task[]) {
@@ -121,17 +125,23 @@ export function useTaskBoard() {
   // runs once on mount (setColumns is stable)
   useEffect(() => {
     const loadTasks = async () => {
+
       try {
         const res = await fetch("/api/tasks");
         if (!res.ok) throw new Error("Failed to load tasks");
         const data: Task[] = await res.json();
         setTasks(data);
         setColumns((current) => mergeColumns(current, data));
-      } catch (err) {
+      }
+
+      catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load tasks");
-      } finally {
+      }
+
+      finally {
         setLoading(false);
       }
+
     };
 
     loadTasks();
@@ -155,6 +165,7 @@ export function useTaskBoard() {
           tags: fields.tags,
         }),
       });
+      
       if (!res.ok) throw new Error("Failed to create task");
       const newTask: Task = await res.json();
 
@@ -163,10 +174,13 @@ export function useTaskBoard() {
         setColumns((current) => mergeColumns(current, [newTask]));
       }
       return true;
-    } catch (err) {
+    }
+
+    catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create task");
       return false;
     }
+
   };
 
   const editTask = async (
@@ -196,9 +210,12 @@ export function useTaskBoard() {
       if (updatedTask.category) {
         setColumns((current) => mergeColumns(current, [updatedTask]));
       }
-    } catch (err) {
+    }
+
+    catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update task");
     }
+
   };
 
   const moveTaskToColumn = async (taskId: number, targetColumn: string) => {
@@ -223,9 +240,12 @@ export function useTaskBoard() {
       setTasks((current) =>
         current.map((t) => (t.id === taskId ? updatedTask : t))
       );
-    } catch (err) {
+    }
+
+    catch (err) {
       setError(err instanceof Error ? err.message : "Failed to move task");
     }
+
   };
 
   const deleteTask = async (id?: number | string) => {
@@ -236,9 +256,12 @@ export function useTaskBoard() {
       if (!res.ok) throw new Error("Failed to delete task");
 
       setTasks((current) => current.filter((task) => task.id !== taskId));
-    } catch (err) {
+    }
+
+    catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete task");
     }
+
   };
 
   // true if added
@@ -259,49 +282,33 @@ export function useTaskBoard() {
   const deleteColumn = async (columnName: string) => {
     if (columnName === UNCATEGORIZED) return;
 
-    const affectedTasks = tasks.filter((t) => t.category === columnName);
+    const affectedCount = tasks.filter((t) => t.category === columnName).length;
 
     let message = `Delete "${columnName}"?`;
-    if (affectedTasks.length > 0) {
-      message += ` ${affectedTasks.length} task(s) will move to Uncategorized.`;
+    if (affectedCount > 0) {
+      message += ` ${affectedCount} task(s) will move to Uncategorized.`;
     }
     if (!window.confirm(message)) return;
 
     try {
-      // allSettled so successes still apply if some fail
-      const results = await Promise.allSettled(
-        affectedTasks.map(async (task) => {
-          const res = await fetch(`/api/tasks/${task.id}`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ category: null }),
-          });
-          if (!res.ok) throw new Error("Failed to update task");
-          const updatedTask: Task = await res.json();
-          return updatedTask;
-        })
-      );
-
-      const updatedTasks: Task[] = [];
-      for (const result of results) {
-        if (result.status === "fulfilled") updatedTasks.push(result.value);
-      }
+      // one request moves every task; on failure nothing moves and the category stays
+      const res = await fetch("/api/tasks", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ clearCategory: columnName }),
+      });
+      if (!res.ok) throw new Error("Failed to move tasks, so the category was kept");
 
       setTasks((current) =>
-        current.map((task) => {
-          const updated = updatedTasks.find((u) => u.id === task.id);
-          return updated ?? task;
-        })
+        current.map((task) => (task.category === columnName ? { ...task, category: null } : task))
       );
-
-      if (updatedTasks.length < affectedTasks.length) {
-        throw new Error("Some tasks failed to move, so the category was kept");
-      }
-
       setColumns((current) => current.filter((c) => c !== columnName));
-    } catch (err) {
+    }
+
+    catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete category");
     }
+
   };
 
   const board = useMemo(() => {

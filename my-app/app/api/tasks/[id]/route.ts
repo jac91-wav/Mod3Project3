@@ -53,10 +53,13 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     });
 
     return NextResponse.json(updatedTask);
-  } catch (error) {
+  }
+
+  catch (error) {
     console.error("Task update error:", error);
     return NextResponse.json({ error: "Failed to update task" }, { status: 500 });
   }
+
 }
 
 export async function DELETE(request: NextRequest, context: RouteContext) {
@@ -66,8 +69,11 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
   try {
     await prisma.task.delete({ where: { id: taskId } });
     return NextResponse.json({ success: true });
-  } catch (error) {
+  }
+
+  catch (error) {
     console.error("Task deletion error:", error);
     return NextResponse.json({ error: "Failed to delete task" }, { status: 500 });
   }
+
 }

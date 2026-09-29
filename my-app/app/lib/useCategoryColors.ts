@@ -7,11 +7,15 @@ const UNCATEGORIZED_COLOR = "#94a3b8";
 const useSavedColors = createStoredValue("taskboard-category-colors", "{}");
 
 function parseColors(json: string): Record<string, string> {
+
   try {
     return JSON.parse(json);
-  } catch {
+  }
+
+  catch {
     return {}; // corrupt: reset
   }
+
 }
 
 // user-picked category colours, saved per browser; others stay automatic
