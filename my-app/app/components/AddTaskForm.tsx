@@ -53,7 +53,7 @@ function AddTaskForm({ onSave, onClose }: AddTaskFormProps) {
         <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} className="field" />
       </label>
       <div className="mt-1 flex gap-2">
-        <button onClick={handleSave} disabled={!canSave} className="btn btn-primary disabled:cursor-not-allowed disabled:opacity-50">
+        <button onClick={handleSave} disabled={!canSave} className="btn btn-primary">
           Add
         </button>
         <button onClick={onClose} className="btn btn-secondary">

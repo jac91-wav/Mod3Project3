@@ -29,7 +29,7 @@ function BackgroundPicker({ value, onChange }: BackgroundPickerProps) {
   return (
     <div className="flex flex-wrap items-center gap-2 text-sm text-slate-600">
       <label className="flex items-center gap-2">
-        Background colour
+        Background Color
         <input
           type="color"
           value={currentColor}

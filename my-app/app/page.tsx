@@ -57,7 +57,7 @@ export default function HomePage() {
             className="mb-6 flex items-center justify-between gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 shadow-lg"
           >
             {error}
-            <button onClick={() => setError(null)} aria-label="Dismiss error" className="cursor-pointer text-lg leading-none">
+            <button onClick={() => setError(null)} aria-label="Dismiss error" className="text-lg leading-none">
               ×
             </button>
           </div>

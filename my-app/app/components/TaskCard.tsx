@@ -29,7 +29,7 @@ function toInputDate(date: DateLike) {
 }
 
 const iconButton =
-  "cursor-pointer rounded-md p-1.5 text-slate-400 transition focus-visible:outline-2 focus-visible:outline-indigo-500";
+  "rounded-md p-1.5 text-slate-400 transition";
 
 function TaskCard({
   id,

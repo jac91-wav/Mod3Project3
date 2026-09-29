@@ -89,7 +89,7 @@ function BoardColumn({ name, tasks, onAddTask, onDropTask, onDeleteColumn, onEdi
             onClick={() => onDeleteColumn(name)}
             title={`Delete "${name}" category`}
             aria-label={`Delete "${name}" category`}
-            className="cursor-pointer rounded-md px-1.5 text-lg leading-none text-slate-400 transition hover:bg-slate-200 hover:text-slate-700"
+            className="rounded-md px-1.5 text-lg leading-none text-slate-400 transition hover:bg-slate-200 hover:text-slate-700"
           >
             ×
           </button>
@@ -109,7 +109,7 @@ function BoardColumn({ name, tasks, onAddTask, onDropTask, onDeleteColumn, onEdi
 
       {/* TASK LIST */}
       {tasks.length === 0 ? (
-        <p className="rounded-xl border-2 border-dashed border-violet-200 py-8 text-center text-sm text-violet-400">
+        <p className="rounded-xl border-2 border-dashed border-black-200 py-8 text-center text-sm text-black-400">
           Drop tasks here
         </p>
       ) : (

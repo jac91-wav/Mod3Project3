@@ -44,7 +44,7 @@ function AddCategoryTile({ onAdd }: AddCategoryTileProps) {
         autoFocus
       />
       <div className="flex gap-2">
-        <button onClick={handleAdd} disabled={!name.trim()} className="btn btn-primary disabled:cursor-not-allowed disabled:opacity-50">
+        <button onClick={handleAdd} disabled={!name.trim()} className="btn btn-primary">
           Add
         </button>
         <button onClick={close} className="btn btn-secondary">

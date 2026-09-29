@@ -13,23 +13,27 @@ body {
   background: #f8fafc;
 }
 
-/* reusable Tailwind classes */
+@layer base {
+  button {
+    @apply cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black disabled:cursor-not-allowed disabled:opacity-50;
+  }
+}
+
 @layer components {
   .field {
     @apply w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-violet-400 focus:ring-4 focus:ring-violet-100;
   }
 
   .btn {
-    @apply inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500;
+    @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-medium transition;
   }
 
   .btn-primary {
-    @apply bg-linear-to-r from-violet-600 to-fuchsia-500 text-white shadow-md hover:from-violet-500 hover:to-fuchsia-400 active:from-violet-700 active:to-fuchsia-600;
+    @apply bg-black text-white shadow-md hover:bg-neutral-800 active:bg-neutral-900;
   }
 
   .btn-secondary {
     @apply border border-violet-200 bg-white shadow-sm hover:bg-violet-50;
-    /* page colour, darkened if light so it reads on white */
     color: oklch(from var(--page-color, #8b5cf6) min(l, 0.5) c h);
   }
 }
