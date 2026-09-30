@@ -16,6 +16,18 @@ npm run dev
 
 `npm test` runs Jest (jsdom + Testing Library). `npm run prisma:studio` opens a DB browser.
 
+## Deploy
+
+GitHub Pages can't host this (API routes + MySQL). Deploy on Vercel instead:
+
+1. Create a hosted MySQL database (e.g. TiDB Cloud Serverless or Aiven) and copy its Prisma connection string.
+2. Create the tables once from `my-app`: `DATABASE_URL="<hosted-url>" npx prisma db push`. In PowerShell, run `$env:DATABASE_URL="<hosted-url>"; npx prisma db push`.
+3. On Vercel, import this repo. Set **Root Directory** to `my-app` and add the `DATABASE_URL` env var, then deploy. Every push to `main` redeploys.
+
+**Docker instead:** from `my-app`, run `docker build -t taskboard .` and then `docker run -p 3000:3000 -e DATABASE_URL="<url>" taskboard`. If you're using the compose MySQL, write `host.docker.internal` in the URL instead of `localhost`. `.dockerignore` keeps `.env` files out of the image.
+
+`postinstall` runs `prisma generate`, because Vercel's dependency cache would otherwise leave the Prisma client missing or out of date. With no auth, everyone using the deployed site shares one board.
+
 ## Architecture
 
 ```
@@ -65,6 +77,7 @@ my-app/
 │     └─ prisma.ts                 PrismaClient singleton (survives dev HMR)
 ├─ prisma/schema.prisma            Task, User
 ├─ docker-compose.yml              mysql:8.0, named volume, password from .env
+├─ Dockerfile, .dockerignore       app image (node:22-alpine, next build → next start on :3000)
 ├─ *.test.jsx                      TaskCard + hook tests (useTaskBoard mocks fetch)
 └─ jest.config.cjs, jest.setup.js, eslint.config.mjs, postcss.config.mjs, tsconfig.json
 ```
