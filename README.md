@@ -28,7 +28,7 @@ Deploy on Vercel:
 
 **Docker instead:** from `my-app`, run `docker build -t taskboard .` and then `docker run -p 3000:3000 -e DATABASE_URL="<url>" taskboard`. If you're using the compose MySQL, write `host.docker.internal` in the URL instead of `localhost`. `.dockerignore` keeps `.env` files out of the image.
 
-`postinstall` runs `prisma generate`, because Vercel's dependency cache would otherwise leave the Prisma client missing or out of date. With no auth, everyone using the deployed site shares one board.
+`postinstall` runs `prisma generate`, because Vercel's dependency cache would otherwise leave the Prisma client missing or out of date.
 
 ## Architecture
 
