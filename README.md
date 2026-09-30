@@ -20,7 +20,7 @@ npm run dev
 
 ## Deploy
 
-GitHub Pages can't host this (API routes + MySQL). Deploy on Vercel instead:
+Deploy on Vercel:
 
 1. Create a hosted MySQL database (e.g. TiDB Cloud Serverless or Aiven) and copy its Prisma connection string.
 2. Create the tables once from `my-app`: `DATABASE_URL="<hosted-url>" npx prisma db push`. In PowerShell, run `$env:DATABASE_URL="<hosted-url>"; npx prisma db push`.
