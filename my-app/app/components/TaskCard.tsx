@@ -90,6 +90,7 @@ function TaskCard({
     // TASK BOX (visible in edit mode)
     return (
       <div className={`${cardClass} grid gap-2`}>
+        {/* TITLE input */}
         <input
           type="text"
           value={form.title}
@@ -97,6 +98,7 @@ function TaskCard({
           placeholder="Task title"
           className="field font-medium"
         />
+        {/* DESCRIPTION textarea */}
         <textarea
           value={form.description}
           onChange={setField("description")}
@@ -104,6 +106,7 @@ function TaskCard({
           rows={2}
           className="field"
         />
+        {/* CATEGORY input */}
         <input
           type="text"
           value={form.category}
@@ -111,6 +114,7 @@ function TaskCard({
           placeholder="Category"
           className="field"
         />
+        {/* TAGS input */}
         <input
           type="text"
           value={form.tags}
@@ -118,6 +122,7 @@ function TaskCard({
           placeholder="Tags, separated by commas"
           className="field"
         />
+        {/* DUE DATE picker */}
         <label className="grid gap-1 text-xs font-medium text-slate-500">
           Due date
           <input type="date" value={form.dueDate} onChange={setField("dueDate")} className="field" />
@@ -168,7 +173,9 @@ function TaskCard({
           <span className="text-xs text-slate-400">#{id ?? "—"}</span>
         </div>
 
+        {/* EDIT / DELETE buttons */}
         <div className="flex gap-1">
+          {/* EDIT button (switches card to edit mode) */}
           <button
             onClick={handleEditClick}
             aria-label="Edit"
@@ -178,7 +185,7 @@ function TaskCard({
             <FiEdit2 aria-hidden />
           </button>
           <button
-            onClick={() => onDelete?.(id)}
+            onClick={() => confirm("Are you sure you want to delete this item?") && onDelete?.(id)}
             aria-label="Delete"
             title="Delete"
             className={`${iconButton} hover:bg-red-50 hover:text-red-600`}

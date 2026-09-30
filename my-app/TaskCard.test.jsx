@@ -13,6 +13,7 @@ describe("TaskCard", () => {
   });
 
   it("calls onDelete with the task id when the delete button is clicked", async () => {
+    jest.spyOn(window, "confirm").mockReturnValue(true);
     const user = userEvent.setup();
     const onDelete = jest.fn();
     render(<TaskCard id="task-7" title="Do laundry" onDelete={onDelete} />);
