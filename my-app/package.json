@@ -10,6 +10,7 @@
     "lint": "eslint",
     "test": "jest",
     "test:watch": "jest --watch",
+    "postinstall": "prisma generate",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio"
