@@ -1,6 +1,7 @@
 # Taskboard
 
 A task board built with Next.js 16 (App Router), React 19, Prisma 5 on MySQL 8 (dockerized), Zod, and Tailwind 4.
+DEMO VIDEO: https://gyazo.com/06ee4752eba684bb7d5a4b3fb499b4da
 
 ## Setup
 
