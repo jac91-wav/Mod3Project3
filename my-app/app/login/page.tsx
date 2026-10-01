@@ -1,16 +1,16 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { type SubmitEvent, useState } from "react";
 
 export default function LoginPage() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
 
   // each button's value is its endpoint: /api/session logs in, /api/users signs up
-  const submit = async (event: FormEvent<HTMLFormElement>) => {
+  const submit = async (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const button = (event.nativeEvent as SubmitEvent).submitter as HTMLButtonElement;
+    const button = event.nativeEvent.submitter as HTMLButtonElement;
     const form = new FormData(event.currentTarget);
 
     const res = await fetch(button.value, {

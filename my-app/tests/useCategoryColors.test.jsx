@@ -1,6 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
-import { useCategoryColors } from "./app/lib/useCategoryColors";
-import { colorForCategory } from "./app/lib/useTaskBoard";
+import { useCategoryColors } from "@/app/lib/useCategoryColors";
+import { colorForCategory } from "@/app/lib/useTaskBoard";
 
 describe("useCategoryColors", () => {
   it("uses the automatic colour until one is picked, then remembers the picked one", () => {

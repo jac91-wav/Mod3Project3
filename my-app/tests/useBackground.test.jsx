@@ -1,5 +1,5 @@
 import { act, renderHook } from "@testing-library/react";
-import { DEFAULT_BACKGROUND, useBackground } from "./app/lib/useBackground";
+import { DEFAULT_BACKGROUND, useBackground } from "@/app/lib/useBackground";
 
 describe("useBackground", () => {
   it("starts on the default colour, then applies and remembers the chosen background", () => {

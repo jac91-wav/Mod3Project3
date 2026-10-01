@@ -1,5 +1,5 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
-import { useTaskBoard } from "./app/lib/useTaskBoard";
+import { useTaskBoard } from "@/app/lib/useTaskBoard";
 
 describe("useTaskBoard", () => {
   it("remembers a category with no tasks, so it's still there after a reload", async () => {

@@ -1,6 +1,6 @@
 /** @jest-environment node */
 import { NextResponse } from "next/server";
-import { getUserId, startSession } from "./app/lib/auth";
+import { getUserId, startSession } from "@/app/lib/auth";
 
 process.env.SESSION_SECRET = "test-secret";
 

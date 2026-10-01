@@ -1,7 +1,7 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import TaskCard from "./app/components/TaskCard";
+import TaskCard from "@/app/components/TaskCard";
 
 describe("TaskCard", () => {
   it("renders the title and description in read-only view", () => {
