@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getUserId, notLoggedInResponse } from "@/app/lib/auth";
 import { prisma } from "@/app/lib/prisma";
 import { z } from "zod";
 
@@ -27,6 +28,8 @@ function invalidIdResponse() {
 }
 
 export async function PATCH(request: NextRequest, context: RouteContext) {
+  const userId = getUserId(request);
+  if (!userId) return notLoggedInResponse();
   const taskId = await getTaskId(context);
   if (taskId === null) return invalidIdResponse();
 
@@ -44,8 +47,9 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     // undefined = unchanged, null = clear, string = Date
     const dueDateUpdate = dueDate ? new Date(dueDate) : dueDate;
 
+    // someone else's task counts as not found
     const updatedTask = await prisma.task.update({
-      where: { id: taskId },
+      where: { id: taskId, userId },
       data: {
         ...rest,
         dueDate: dueDateUpdate,
@@ -63,11 +67,13 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 }
 
 export async function DELETE(request: NextRequest, context: RouteContext) {
+  const userId = getUserId(request);
+  if (!userId) return notLoggedInResponse();
   const taskId = await getTaskId(context);
   if (taskId === null) return invalidIdResponse();
 
   try {
-    await prisma.task.delete({ where: { id: taskId } });
+    await prisma.task.delete({ where: { id: taskId, userId } });
     return NextResponse.json({ success: true });
   }
 

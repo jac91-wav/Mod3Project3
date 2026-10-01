@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getUserId, notLoggedInResponse } from "@/app/lib/auth";
 import { prisma } from "@/app/lib/prisma";
 import { z } from "zod";
 
@@ -15,10 +16,12 @@ const clearCategorySchema = z.object({
   clearCategory: z.string().min(1).max(100),
 });
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const userId = getUserId(request);
+  if (!userId) return notLoggedInResponse();
 
   try {
-    const tasks = await prisma.task.findMany();
+    const tasks = await prisma.task.findMany({ where: { userId } });
     return NextResponse.json(tasks);
   }
 
@@ -30,6 +33,8 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const userId = getUserId(request);
+  if (!userId) return notLoggedInResponse();
 
   try {
     const body = await request.json();
@@ -51,6 +56,7 @@ export async function POST(request: NextRequest) {
         // ISO string -> Date
         dueDate: dueDate ? new Date(dueDate) : null,
         tags: tags ?? [],
+        userId,
       },
     });
 
@@ -64,8 +70,9 @@ export async function POST(request: NextRequest) {
 
 }
 
-// one query for the whole category, so it's all-or-nothing
 export async function PATCH(request: NextRequest) {
+  const userId = getUserId(request);
+  if (!userId) return notLoggedInResponse();
 
   try {
     const body = await request.json();
@@ -78,7 +85,7 @@ export async function PATCH(request: NextRequest) {
     const { clearCategory } = validation.data;
 
     const { count } = await prisma.task.updateMany({
-      where: { category: clearCategory },
+      where: { category: clearCategory, userId },
       data: { category: null },
     });
 

@@ -10,5 +10,5 @@ RUN npm ci
 COPY . .
 RUN npm run build
 EXPOSE 3000
-# DATABASE_URL comes from `docker run -e`, never baked into the image
+# DATABASE_URL and SESSION_SECRET come from `docker run -e`, never baked into the image
 CMD ["npm", "start"]

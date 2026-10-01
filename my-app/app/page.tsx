@@ -3,6 +3,7 @@
 import AddCategoryTile from "./components/AddCategoryTile";
 import BackgroundPicker from "./components/BackgroundPicker";
 import BoardColumn from "./components/BoardColumn";
+import { useRouter } from "next/navigation";
 import type { CSSProperties } from "react";
 import { backgroundColor, useBackground } from "./lib/useBackground";
 import { SortKey, useTaskBoard } from "./lib/useTaskBoard";
@@ -16,6 +17,13 @@ export default function HomePage() {
   } = useTaskBoard();
   const [background, setBackground] = useBackground();
 
+  const router = useRouter();
+
+  const logOut = async () => {
+    await fetch("/api/session", { method: "DELETE" });
+    router.replace("/login");
+  };
+
   // --page-color tints .btn-secondary text
   const pageStyle = { background, "--page-color": backgroundColor(background) } as CSSProperties;
 
@@ -25,10 +33,11 @@ export default function HomePage() {
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
         {/* TOP PANEL */}
         <div className="mb-6 rounded-2xl bg-white/80 p-5 shadow-lg backdrop-blur">
-          <header className="mb-4">
+          <header className="mb-4 flex items-center justify-between gap-3">
             <h1 className="text-3xl font-bold tracking-tight">
               Taskboard Demo
             </h1>
+            <button onClick={logOut} className="btn btn-secondary">Log out</button>
           </header>
 
           {/* CONTROLS */}
