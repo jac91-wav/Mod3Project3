@@ -2,6 +2,8 @@
 
 A task board built with Next.js 16 (App Router), React 19, Prisma 5 on MySQL 8 (dockerized), Zod, and Tailwind 4.
 
+DEMO VIDEO: https://gyazo.com/06ee4752eba684bb7d5a4b3fb499b4da
+
 ## Setup
 
 ```bash
@@ -18,7 +20,7 @@ npm run dev
 
 ## Deploy
 
-GitHub Pages can't host this (API routes + MySQL). Deploy on Vercel instead:
+Deploy on Vercel:
 
 1. Create a hosted MySQL database (e.g. TiDB Cloud Serverless or Aiven) and copy its Prisma connection string.
 2. Create the tables once from `my-app`: `DATABASE_URL="<hosted-url>" npx prisma db push`. In PowerShell, run `$env:DATABASE_URL="<hosted-url>"; npx prisma db push`.
@@ -26,7 +28,7 @@ GitHub Pages can't host this (API routes + MySQL). Deploy on Vercel instead:
 
 **Docker instead:** from `my-app`, run `docker build -t taskboard .` and then `docker run -p 3000:3000 -e DATABASE_URL="<url>" taskboard`. If you're using the compose MySQL, write `host.docker.internal` in the URL instead of `localhost`. `.dockerignore` keeps `.env` files out of the image.
 
-`postinstall` runs `prisma generate`, because Vercel's dependency cache would otherwise leave the Prisma client missing or out of date. With no auth, everyone using the deployed site shares one board.
+`postinstall` runs `prisma generate`, because Vercel's dependency cache would otherwise leave the Prisma client missing or out of date.
 
 ## Architecture
 
